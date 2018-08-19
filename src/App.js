@@ -7,88 +7,36 @@ const TOTAL_NUM_OF_BOARD_CELLS = BOARD_SIZE * BOARD_SIZE;
 const PLAYER_X = 'X';
 const PLAYER_O = 'O';
 
+const PLAYERS = ['X', 'O'];
+
 class App extends PureComponent {
-    
+
     state = {
         board: {},
         isGameOver: false,
-        playerTurn: PLAYER_X,
+        currentPlayer: null,
         numOfTurns: 0,
     };
 
     constructor() {
         super();
         this.state.board = this.initializeBoard();
+        this.state.currentPlayer = this.getRandomPlayer();
     }
 
     initializeBoard() {
         const board = {};
-        for(let i=0; i<BOARD_SIZE; i++) {
+        for (let i = 0; i < BOARD_SIZE; i++) {
             board[i] = {};
-            for(let j=0; j<BOARD_SIZE; j++) {
+            for (let j = 0; j < BOARD_SIZE; j++) {
                 board[i][j] = '';
             }
         }
         return board;
     }
 
-    hasPlayerWonHorizontally(board) {
-        let playerWon = null;
-        
-        // check horizontally
-        for (let row in board) {
-            let xPlayerCheckHorizontal = 0;
-            let oPlayerCheckHorizontal = 0;
-
-            for (let col in board[row]) {
-                if (board[row][col] === PLAYER_X) {
-                    xPlayerCheckHorizontal++;
-                } else if (board[row][col] === PLAYER_O) {
-                    oPlayerCheckHorizontal++;
-                }
-            }
-
-            if (xPlayerCheckHorizontal === BOARD_SIZE) {
-                playerWon = PLAYER_X;
-                break;
-            }
-
-            if (oPlayerCheckHorizontal === BOARD_SIZE) {
-                playerWon = PLAYER_O;
-                break;
-            }
-        }
-
-        return playerWon;
-    }
-
-    hasPlayerWonVertically(board) {
-        let playerWon = null;
-        
-        return playerWon;
-    }
-
-    hasPlayerWonDiag(board) {
-        let playerWon = null;
-        
-        // check diagonal (from top-left to bottom-right)
-        let xPlayerDiag = 0;
-        let oPlayerDiag = 0;
-        for (let i=0; i<BOARD_SIZE; i++) {
-            if (board[i][i] === PLAYER_X) {
-                xPlayerDiag++;
-            } else if (board[i][i] === PLAYER_O) {
-                oPlayerDiag++;
-            }
-        }
-
-        if (xPlayerDiag === BOARD_SIZE) {
-            playerWon = PLAYER_X;
-        } else if (oPlayerDiag === BOARD_SIZE) {
-            playerWon = PLAYER_O;
-        }
-
-        return playerWon;
+    getRandomPlayer() {
+        return PLAYERS[Math.floor(Math.random() * 2)];
     }
 
     /**
@@ -96,24 +44,88 @@ class App extends PureComponent {
      */
     hasPlayerWon(board) {
         let playerWon = null;
-        
-        const hasPlayerWonHorizontally = this.hasPlayerWonHorizontally(board);
-        const hasPlayerWonVertically = this.hasPlayerWonVertically(board);
-        const hasPlayerWonDiag = this.hasPlayerWonDiag(board);
 
-        // TODO: Add check for vertical and anti-diagonal (top-right to bottom-left)
+        // vertical count mapping
+        const playerCircleColMap = (new Array(BOARD_SIZE)).fill(0);
+        const playerCrossColMap = (new Array(BOARD_SIZE)).fill(0);
 
+        // horizontal count mapping
+        const playerCrossRowMap = (new Array(BOARD_SIZE)).fill(0);
+        const playerCircleRowMap = (new Array(BOARD_SIZE)).fill(0);
 
+        // diagonal count mapping (top-left to bottom-right)
+        let playerCrossDiagCount = 0;
+        let playerCircleDiagCount = 0;
 
-        return hasPlayerWonHorizontally || hasPlayerWonVertically || hasPlayerWonDiag;
+        // anti-diagonal count mapping (top-right to bottom-left)
+        let playerCrossAntiDiagCount = 0;
+        let playerCircleAntiDiagCount = 0;
+
+        for (let row in board) {
+            for (let col in board[row]) {
+                const cellValue = board[row][col];
+
+                // update horizontal and vertical counts
+                if (cellValue === PLAYER_X) {
+                    playerCrossRowMap[row]++;
+                    playerCrossColMap[col]++;
+                } else if (cellValue === PLAYER_O) {
+                    playerCircleRowMap[row]++;
+                    playerCircleColMap[col]++;
+                }
+
+                // update diagonal counts (upper-left to bottom-right)
+                if (row === col) {
+                    if (cellValue === PLAYER_X) {
+                        playerCrossDiagCount++;
+                    } else if (cellValue === PLAYER_O) {
+                        playerCircleDiagCount++;
+                    }
+                }
+            }
+        }
+
+        // update anti-diagonal counts (upper-right to bottom-left)
+        for (let i=0; i<BOARD_SIZE; i++) {
+            const cellValue = board[i][BOARD_SIZE - 1 - i];
+            if (cellValue === PLAYER_X) {
+                playerCrossAntiDiagCount++;
+            } else if (cellValue === PLAYER_O) {
+                playerCircleAntiDiagCount++;
+            }
+        }
+
+        // player cross win conditions
+        const playerCrossWonVertically = playerCrossColMap.some(colVal => colVal === BOARD_SIZE);
+        const playerCrossWonHorizontally = playerCrossRowMap.some(rowVal => rowVal === BOARD_SIZE);
+        const playerCrossWonDiagonally = playerCrossDiagCount === BOARD_SIZE;
+        const playerCrossWonAntiDiagonally = playerCrossAntiDiagCount === BOARD_SIZE;
+
+        // player circle win conditions
+        const playerCircleWonVertically = playerCircleColMap.some(colVal => colVal === BOARD_SIZE);
+        const playerCircleWonHorizontally = playerCircleRowMap.some(rowVal => rowVal === BOARD_SIZE);
+        const playerCircleWonDiagonally = playerCircleDiagCount === BOARD_SIZE;
+        const playerCircleWonAntiDiagonally = playerCircleAntiDiagCount === BOARD_SIZE;
+
+        if (playerCrossWonHorizontally || playerCrossWonVertically || playerCrossWonDiagonally || playerCrossWonAntiDiagonally) {
+            playerWon = PLAYER_X;
+        } else if (playerCircleWonHorizontally || playerCircleWonVertically || playerCircleWonDiagonally || playerCircleWonAntiDiagonally) {
+            playerWon = PLAYER_O;
+        }
+
+        return playerWon;
     }
 
     onCellClick(row, col) {
-        const { board, numOfTurns, playerTurn } = this.state;
+        const { board, numOfTurns, currentPlayer, isGameOver } = this.state;
+
+        if (isGameOver) {
+            return;
+        }
 
         if (board[row][col] === '') {
             const updatedBoard = JSON.parse(JSON.stringify(board));
-            updatedBoard[row][col] = playerTurn;
+            updatedBoard[row][col] = currentPlayer;
             const nextNumOfTurns = numOfTurns + 1;
 
             const hasPlayerWon = this.hasPlayerWon(updatedBoard);
@@ -130,15 +142,15 @@ class App extends PureComponent {
                     board: updatedBoard,
                     isGameOver: true,
                     numOfTurns: nextNumOfTurns,
-                    playerTurn: null,
+                    currentPlayer: null,
                     playerWon: null,
                 });
             } else {
-                const nextPlayerTurn = (playerTurn === PLAYER_X) ? PLAYER_O : PLAYER_X;
+                const nextcurrentPlayer = (currentPlayer === PLAYER_X) ? PLAYER_O : PLAYER_X;
                 this.setState({
                     board: updatedBoard,
                     numOfTurns: nextNumOfTurns,
-                    playerTurn: nextPlayerTurn,
+                    currentPlayer: nextcurrentPlayer,
                 });
             }
         }
@@ -148,26 +160,26 @@ class App extends PureComponent {
         this.setState({
             board: this.initializeBoard(),
             isGameOver: false,
-            playerTurn: PLAYER_X,
+            currentPlayer: this.getRandomPlayer(),
             numOfTurns: 0,
         });
     };
 
     render() {
-        const { board, isGameOver, playerTurn, playerWon } = this.state;
+        const { board, isGameOver, currentPlayer, playerWon } = this.state;
 
         let renderHeader = null;
         let renderedResetButton = null;
 
         if (isGameOver) {
             if (playerWon) {
-                renderHeader = <div>{`Player ${playerWon} has won`}</div>;
+                renderHeader = <div>{`Player ${playerWon} won`}</div>;
             } else {
-                renderHeader = <div>{`Draw! No one has won`}</div>;
+                renderHeader = <div>{`Draw! No one won`}</div>;
             }
             renderedResetButton = <button onClick={this.onResetButtonClick}>Play Again!</button>;
         } else {
-            renderHeader = <div>{`Player ${playerTurn}'s Turn!`}</div>;
+            renderHeader = <div>{`Player ${currentPlayer}'s Turn!`}</div>;
         }
 
         return (
