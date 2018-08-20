@@ -52,6 +52,10 @@ const styles = theme => ({
         backgroundColor: '#FFF',
         height: 100,
         width: 100,
+        '&:hover': {
+            // light-green
+            backgroundColor: '#90ee90',
+        },
     },
     playerCross: {
         // red
@@ -60,6 +64,9 @@ const styles = theme => ({
     playerCircle: {
         // green-blue
         color: '#1ba39c',
+    },
+    gameOverText: {
+        color: 'orange',
     },
 });
 
@@ -242,9 +249,11 @@ class App extends PureComponent {
 
         let headerText = null;
         let renderedResetButton = null;
+        let headerTitleClassName = classes.headerTitle;
         if (isGameOver) {
-            headerText = playerWon ? `Player ${playerWon} won`: 'Draw!';
-            const buttonText = 'Play Again!';
+            headerText = playerWon ? `Player ${playerWon} won` : 'Draw!';
+            headerTitleClassName += ` ${classes.gameOverText}`;
+
             renderedResetButton = (
                 <Button
                     variant="contained"
@@ -252,7 +261,7 @@ class App extends PureComponent {
                     className={classes.resetButton}
                     onClick={this.onResetButtonClick}
                 >
-                    {buttonText}
+                    {'Play Again!'}
                 </Button>
             );
         } else {
@@ -264,7 +273,7 @@ class App extends PureComponent {
                 <AppBar />
                 <Paper className={classes.container}>
                     <div className={classes.header}>
-                        <Typography variant="headline" className={classes.headerTitle}>
+                        <Typography variant="headline" className={headerTitleClassName}>
                             {headerText}
                         </Typography>
                         {renderedResetButton}
