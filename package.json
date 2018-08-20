@@ -4,9 +4,13 @@
   "private": true,
   "homepage": "http://achoung.github.io/react-tic-tac-toe",
   "dependencies": {
+    "@material-ui/core": "^1.5.1",
+    "@material-ui/icons": "^2.0.3",
+    "prop-types": "^15.6.2",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
-    "react-scripts": "1.1.4"
+    "react-scripts": "1.1.4",
+    "typeface-roboto": "0.0.54"
   },
   "scripts": {
     "start": "react-scripts start",
