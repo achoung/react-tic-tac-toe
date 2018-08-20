@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
+import { Button, Card, CardContent, Paper, Typography } from '@material-ui/core';
 import { withStyles, createMuiTheme } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 import AppBar from './AppBar';
@@ -13,7 +14,7 @@ const theme = createMuiTheme({
     },
 });
 
-const styles = {
+const styles = theme => ({
     container: {
         display: 'flex',
         justifyContent: 'center',
@@ -26,15 +27,14 @@ const styles = {
         minWidth: 300,
         alignItems: 'center',
         textAlign: 'center',
-        padding: 5,
+        padding: 10,
     },
     headerTitle: {
         flex: '1 auto',
     },
     resetButton: {
-        flex: '1 auto',
-        padding: 5,
-        maxWidth: 100,
+        flex: '0 auto',
+        padding: '6px 12px',
     },
     grid: {
         maxWidth: 400,
@@ -49,11 +49,19 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center',
         border: '1px solid black',
-        background: 'orange',
+        background: '#FFF',
         height: 100,
         width: 100,
-    }
-};
+    },
+    playerCross: {
+        // red
+        color: '#f22613',
+    },
+    playerCircle: {
+        // green-blue
+        color: '#1ba39c',
+    },
+});
 
 // constants
 const BOARD_DIMENSION = 3;
@@ -72,6 +80,8 @@ class App extends PureComponent {
         board: {},
         isGameOver: false,
         currentPlayer: null,
+        playerWon: null,
+        winningCells: {},
         numOfTurns: 0,
     };
 
@@ -102,6 +112,7 @@ class App extends PureComponent {
      */
     hasPlayerWon(board) {
         let playerWon = null;
+        let winningCells = {};
 
         // vertical count mapping
         const playerCircleColMap = (new Array(BOARD_DIMENSION)).fill(0);
@@ -231,26 +242,23 @@ class App extends PureComponent {
         const { classes } = this.props;
         const { board, isGameOver, currentPlayer, playerWon } = this.state;
 
-        let renderHeader = null;
+        let headerText = null;
         let renderedResetButton = null;
-
         if (isGameOver) {
-            if (playerWon) {
-                renderHeader = <div className={classes.headerTitle}>{`Player ${playerWon} won`}</div>;
-            } else {
-                renderHeader = <div className={classes.headerTitle}>{`Draw! No one won`}</div>;
-            }
-            renderedResetButton = <button className={classes.resetButton} onClick={this.onResetButtonClick}>Play Again!</button>;
+            headerText = playerWon ? `Player ${playerWon} won`: 'Draw! No one won';
+            renderedResetButton = <Button variant="contained" color="primary" className={classes.resetButton} onClick={this.onResetButtonClick}>Play Again!</Button>;
         } else {
-            renderHeader = <div className={classes.headerTitle}>{`Player ${currentPlayer}'s Turn!`}</div>;
+            headerText = `Player ${currentPlayer}'s Turn!`;
         }
 
         return (
             <MuiThemeProvider theme={theme}>
                 <AppBar />
-                <div className={classes.container}>
+                <Paper className={classes.container}>
                     <div className={classes.header}>
-                        {renderHeader}
+                        <Typography variant="headline" className={classes.headerTitle}>
+                            {headerText}
+                        </Typography>
                         {renderedResetButton}
                     </div>
                     <div className={classes.grid}>
@@ -260,14 +268,27 @@ class App extends PureComponent {
                                     <div key={`row_${row}`} className={classes.gridRow}>
                                         {
                                             Object.keys(board[row]).map(col => {
+                                                const cellValue = board[row][col];
+
+                                                let cardContentClassName;
+                                                if (cellValue === PLAYER_X) {
+                                                    cardContentClassName = classes.playerCross;
+                                                } else if (cellValue === PLAYER_O) {
+                                                    cardContentClassName = classes.playerCircle;
+                                                }
                                                 return (
-                                                    <div
+                                                    <Card
                                                         key={`col_${col}`}
+                                                        className={classes.card}
                                                         onClick={this.onCellClick.bind(this, row, col)}
                                                         className={classes.gridCell}
                                                     >
-                                                        {board[row][col]}
-                                                    </div>
+                                                        <CardContent>
+                                                            <Typography className={cardContentClassName} variant="display1">
+                                                                {board[row][col]}
+                                                            </Typography>
+                                                        </CardContent>
+                                                    </Card>
                                                 );
                                             })
                                         }
@@ -276,10 +297,10 @@ class App extends PureComponent {
                             })
                         }
                     </div>
-                </div>
+                </Paper>
             </MuiThemeProvider>
         );
     }
 }
 
-export default withStyles(styles)(App);
+export default withStyles(styles, { withTheme: true })(App);
