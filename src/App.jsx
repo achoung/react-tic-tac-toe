@@ -49,7 +49,7 @@ const styles = theme => ({
         justifyContent: 'center',
         alignItems: 'center',
         border: '1px solid black',
-        background: '#FFF',
+        backgroundColor: '#FFF',
         height: 100,
         width: 100,
     },
@@ -72,7 +72,7 @@ const PLAYER_O = 'O';
 const PLAYERS = ['X', 'O'];
 
 class App extends PureComponent {
-    static PropTypes = {
+    static propTypes = {
         classes: PropTypes.object.isRequired,
     };
 
@@ -81,7 +81,6 @@ class App extends PureComponent {
         isGameOver: false,
         currentPlayer: null,
         playerWon: null,
-        winningCells: {},
         numOfTurns: 0,
     };
 
@@ -112,7 +111,6 @@ class App extends PureComponent {
      */
     hasPlayerWon(board) {
         let playerWon = null;
-        let winningCells = {};
 
         // vertical count mapping
         const playerCircleColMap = (new Array(BOARD_DIMENSION)).fill(0);
@@ -279,7 +277,6 @@ class App extends PureComponent {
                                                 return (
                                                     <Card
                                                         key={`col_${col}`}
-                                                        className={classes.card}
                                                         onClick={this.onCellClick.bind(this, row, col)}
                                                         className={classes.gridCell}
                                                     >
