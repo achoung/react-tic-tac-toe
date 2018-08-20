@@ -243,8 +243,18 @@ class App extends PureComponent {
         let headerText = null;
         let renderedResetButton = null;
         if (isGameOver) {
-            headerText = playerWon ? `Player ${playerWon} won`: 'Draw! No one won';
-            renderedResetButton = <Button variant="contained" color="primary" className={classes.resetButton} onClick={this.onResetButtonClick}>Play Again!</Button>;
+            headerText = playerWon ? `Player ${playerWon} won`: 'Draw!';
+            const buttonText = 'Play Again!';
+            renderedResetButton = (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.resetButton}
+                    onClick={this.onResetButtonClick}
+                >
+                    {buttonText}
+                </Button>
+            );
         } else {
             headerText = `Player ${currentPlayer}'s Turn!`;
         }
