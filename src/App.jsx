@@ -37,7 +37,7 @@ const styles = theme => ({
     },
     grid: {
         maxWidth: 400,
-    },    
+    },
     gridRow: {
         display: 'flex',
     },
@@ -51,10 +51,10 @@ const styles = theme => ({
         backgroundColor: '#FFF',
         height: 100,
         width: 100,
-        '&:hover': {
-            // light-green
-            backgroundColor: '#90ee90',
-        },
+    },
+    winGridCell: {
+        // light-green
+        backgroundColor: '#90ee90',
     },
     playerCross: {
         // red
@@ -87,6 +87,7 @@ class App extends PureComponent {
         currentPlayer: null,
         playerWon: null,
         numOfTurns: 0,
+        winCondition: [],
     };
 
     constructor() {
@@ -116,22 +117,23 @@ class App extends PureComponent {
      */
     hasPlayerWon(board) {
         let playerWon = null;
+        let winCondition = [];
 
         // vertical count mapping
-        const playerCircleColMap = (new Array(BOARD_DIMENSION)).fill(0);
-        const playerCrossColMap = (new Array(BOARD_DIMENSION)).fill(0);
+        const playerCircleColMap = {};
+        const playerCrossColMap = {};
 
         // horizontal count mapping
-        const playerCrossRowMap = (new Array(BOARD_DIMENSION)).fill(0);
-        const playerCircleRowMap = (new Array(BOARD_DIMENSION)).fill(0);
+        const playerCrossRowMap = {};
+        const playerCircleRowMap = {};
 
         // diagonal count mapping (top-left to bottom-right)
-        let playerCrossDiagCount = 0;
-        let playerCircleDiagCount = 0;
+        const playerCrossDiagMap = [];
+        const playerCircleDiagMap = [];
 
         // anti-diagonal count mapping (top-right to bottom-left)
-        let playerCrossAntiDiagCount = 0;
-        let playerCircleAntiDiagCount = 0;
+        const playerCrossAntiDiagMap = [];
+        const playerCircleAntiDiagMap = [];
 
         for (let row in board) {
             for (let col in board[row]) {
@@ -139,53 +141,116 @@ class App extends PureComponent {
 
                 // update horizontal and vertical counts
                 if (cellValue === PLAYER_X) {
-                    playerCrossRowMap[row]++;
-                    playerCrossColMap[col]++;
+                    if (playerCrossColMap[col]) {
+                        playerCrossColMap[col].push({ row, col });
+                    } else {
+                        playerCrossColMap[col] = [{ row, col }];
+                    }
+
+                    if (playerCrossRowMap[row]) {
+                        playerCrossRowMap[row].push({ row, col });
+                    } else {
+                        playerCrossRowMap[row] = [{ row, col }];
+                    }
                 } else if (cellValue === PLAYER_O) {
-                    playerCircleRowMap[row]++;
-                    playerCircleColMap[col]++;
+                    if (playerCircleColMap[col]) {
+                        playerCircleColMap[col].push({ row, col });
+                    } else {
+                        playerCircleColMap[col] = [{ row, col }];
+                    }
+
+                    if (playerCircleRowMap[row]) {
+                        playerCircleRowMap[row].push({ row, col });
+                    } else {
+                        playerCircleRowMap[row] = [{ row, col }];
+                    }
                 }
 
                 // update diagonal counts (upper-left to bottom-right)
                 if (row === col) {
                     if (cellValue === PLAYER_X) {
-                        playerCrossDiagCount++;
+                        playerCrossDiagMap.push({ row, col });
                     } else if (cellValue === PLAYER_O) {
-                        playerCircleDiagCount++;
+                        playerCircleDiagMap.push({ row, col });
                     }
                 }
             }
         }
 
         // update anti-diagonal counts (upper-right to bottom-left)
-        for (let i=0; i<BOARD_DIMENSION; i++) {
-            const cellValue = board[i][BOARD_DIMENSION - 1 - i];
+        for (let row = 0; row < BOARD_DIMENSION; row++) {
+            const col = BOARD_DIMENSION - 1 - row;
+            const cellValue = board[row][col];
+
             if (cellValue === PLAYER_X) {
-                playerCrossAntiDiagCount++;
+                playerCrossAntiDiagMap.push({
+                    row: row.toString(),
+                    col: col.toString(),
+                });
             } else if (cellValue === PLAYER_O) {
-                playerCircleAntiDiagCount++;
+                playerCircleAntiDiagMap.push({
+                    row: row.toString(),
+                    col: col.toString(),
+                });
             }
         }
 
-        // player cross win conditions
-        const playerCrossWonVertically = playerCrossColMap.some(colVal => colVal === BOARD_DIMENSION);
-        const playerCrossWonHorizontally = playerCrossRowMap.some(rowVal => rowVal === BOARD_DIMENSION);
-        const playerCrossWonDiagonally = playerCrossDiagCount === BOARD_DIMENSION;
-        const playerCrossWonAntiDiagonally = playerCrossAntiDiagCount === BOARD_DIMENSION;
+        // check if player cross has a win condition
+        const playerCrossWinCondition = this.findWinCondition({
+            colMap: playerCrossColMap,
+            rowMap: playerCrossRowMap,
+            diagMap: playerCrossDiagMap,
+            antiDiagMap: playerCrossAntiDiagMap,
+        });
 
-        // player circle win conditions
-        const playerCircleWonVertically = playerCircleColMap.some(colVal => colVal === BOARD_DIMENSION);
-        const playerCircleWonHorizontally = playerCircleRowMap.some(rowVal => rowVal === BOARD_DIMENSION);
-        const playerCircleWonDiagonally = playerCircleDiagCount === BOARD_DIMENSION;
-        const playerCircleWonAntiDiagonally = playerCircleAntiDiagCount === BOARD_DIMENSION;
-
-        if (playerCrossWonHorizontally || playerCrossWonVertically || playerCrossWonDiagonally || playerCrossWonAntiDiagonally) {
+        if (playerCrossWinCondition.length === BOARD_DIMENSION) {
             playerWon = PLAYER_X;
-        } else if (playerCircleWonHorizontally || playerCircleWonVertically || playerCircleWonDiagonally || playerCircleWonAntiDiagonally) {
-            playerWon = PLAYER_O;
+            winCondition = playerCrossWinCondition;
+        } else {            
+            // check if player circle has a win condition
+            const playerCircleWinCondition = this.findWinCondition({
+                colMap: playerCircleColMap,
+                rowMap: playerCircleRowMap,
+                diagMap: playerCircleDiagMap,
+                antiDiagMap: playerCircleAntiDiagMap,
+            });
+
+            if (playerCircleWinCondition.length === BOARD_DIMENSION) {
+                playerWon = PLAYER_O;
+                winCondition = playerCircleWinCondition;
+            }
         }
 
-        return playerWon;
+        return { playerWon, winCondition };
+    }
+
+    findWinCondition({ colMap, rowMap, diagMap, antiDiagMap }) {
+        // check horizontally
+        const colKeys = Object.keys(colMap);
+        for (let i=0; i<colKeys.length; i++) {
+            const colMapList = colMap[colKeys[i]];
+            if (colMapList.length === BOARD_DIMENSION) {
+                return colMapList;
+            }
+        }
+
+        // check vertically
+        const rowKeys = Object.keys(rowMap);
+        for (let i=0; i<rowKeys.length; i++) {
+            const rowMapList = rowMap[rowKeys[i]];
+            if (rowMapList.length === BOARD_DIMENSION) {
+                return rowMapList;
+            }
+        }
+        
+        // check diagonal and anti-diagonal
+        if (diagMap.length === BOARD_DIMENSION) {
+            return diagMap;
+        } else if (antiDiagMap.length === BOARD_DIMENSION) {
+            return antiDiagMap;
+        } else {
+            return [];
+        }
     }
 
     onCellClick(row, col) {
@@ -201,17 +266,18 @@ class App extends PureComponent {
             updatedBoard[row][col] = currentPlayer;
             const nextNumOfTurns = numOfTurns + 1;
 
-            const hasPlayerWon = this.hasPlayerWon(updatedBoard);
+            const { playerWon, winCondition } = this.hasPlayerWon(updatedBoard);
 
             // check if a player has won from clicking on a cell
-            if (hasPlayerWon) {
+            if (playerWon) {
                 this.setState({
                     board: updatedBoard,
                     isGameOver: true,
                     numOfTurns: nextNumOfTurns,
-                    playerWon: hasPlayerWon,
+                    playerWon,
+                    winCondition,
                 });
-            // check "Draw" condition if all grid cells are taken and no one has won yet
+                // check "Draw" condition if all grid cells are taken and no one has won yet
             } else if (nextNumOfTurns === TOTAL_NUM_OF_BOARD_CELLS) {
                 this.setState({
                     board: updatedBoard,
@@ -238,8 +304,14 @@ class App extends PureComponent {
             isGameOver: false,
             currentPlayer: this.getRandomPlayer(),
             numOfTurns: 0,
+            winCondition: [],
         });
     };
+
+    isCellWinCondition(row, col) {
+        const { winCondition } = this.state;
+        return winCondition.some(winCell => (winCell.row === row && winCell.col === col));
+    }
 
     render() {
         const { classes } = this.props;
@@ -285,17 +357,26 @@ class App extends PureComponent {
                                             Object.keys(board[row]).map(col => {
                                                 const cellValue = board[row][col];
 
+                                                // determine how to style the X's or O's
                                                 let cardContentClassName;
                                                 if (cellValue === PLAYER_X) {
                                                     cardContentClassName = classes.playerCross;
                                                 } else if (cellValue === PLAYER_O) {
                                                     cardContentClassName = classes.playerCircle;
                                                 }
+
+                                                // determine if the cell is a win-cell or not if the game is over
+                                                let cardClassName = classes.gridCell;
+                                                let isWinCell = this.isCellWinCondition(row, col);
+                                                if (isGameOver && isWinCell) {
+                                                    cardClassName += ` ${classes.winGridCell}`;
+                                                }
+
                                                 return (
                                                     <Card
                                                         key={`col_${col}`}
                                                         onClick={this.onCellClick.bind(this, row, col)}
-                                                        className={classes.gridCell}
+                                                        className={cardClassName}
                                                     >
                                                         <CardContent>
                                                             <Typography className={cardContentClassName} variant="display1">
