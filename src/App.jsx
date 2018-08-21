@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
-import { Button, Card, CardContent, Paper, Typography } from '@material-ui/core';
+import { Button, Card, CardContent, Typography } from '@material-ui/core';
 import { withStyles, createMuiTheme } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 import AppBar from './AppBar';
@@ -20,14 +20,13 @@ const styles = theme => ({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
-        padding: 10,
     },
     header: {
         display: 'flex',
         minWidth: 300,
+        minHeight: 75,
         alignItems: 'center',
         textAlign: 'center',
-        padding: 10,
     },
     headerTitle: {
         flex: '1 auto',
@@ -271,7 +270,7 @@ class App extends PureComponent {
         return (
             <MuiThemeProvider theme={theme}>
                 <AppBar />
-                <Paper className={classes.container}>
+                <div className={classes.container}>
                     <div className={classes.header}>
                         <Typography variant="headline" className={headerTitleClassName}>
                             {headerText}
@@ -313,7 +312,7 @@ class App extends PureComponent {
                             })
                         }
                     </div>
-                </Paper>
+                </div>
             </MuiThemeProvider>
         );
     }

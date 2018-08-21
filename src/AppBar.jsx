@@ -10,7 +10,7 @@ import Zoom from '@material-ui/core/Zoom';
 import GitHubIcon from './icons/GitHub';
 import LinkedInIcon from './icons/LinkedIn';
 
-const APP_BAR_TITLE = 'React Tic-Tac-Toe';
+const APP_BAR_TITLE = 'Andrew\'s Tic-Tac-Toe';
 const TOOLBAR_ITEMS = [
     {
         id: 'github',
