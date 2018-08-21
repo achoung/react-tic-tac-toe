@@ -74,7 +74,6 @@ const BOARD_DIMENSION = 3;
 const TOTAL_NUM_OF_BOARD_CELLS = BOARD_DIMENSION * BOARD_DIMENSION;
 const PLAYER_X = 'X';
 const PLAYER_O = 'O';
-
 const PLAYERS = ['X', 'O'];
 
 class App extends PureComponent {
@@ -318,4 +317,4 @@ class App extends PureComponent {
     }
 }
 
-export default withStyles(styles, { withTheme: true })(App);
+export default withStyles(styles)(App);
