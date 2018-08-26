@@ -42,6 +42,7 @@ const styles = {
     },
     headerTitle: {
         flex: '1 auto',
+        textShadow: '2px 2px black',
     },
     resetButton: {
         flex: '0 auto',
@@ -71,6 +72,9 @@ const styles = {
     winGridCell: {
         // light-green
         backgroundColor: '#90ee90',
+    },
+    cardContent: {
+        textShadow: '1px 1px black',
     },
     playerCross: {
         // dark red
@@ -406,11 +410,11 @@ class App extends PureComponent {
                                                 const cellValue = board[row][col];
 
                                                 // determine how to style the X's or O's
-                                                let cardContentClassName;
+                                                let cardContentClassName = classes.cardContent;
                                                 if (cellValue === PLAYER_X) {
-                                                    cardContentClassName = classes.playerCross;
+                                                    cardContentClassName += ` ${classes.playerCross}`;
                                                 } else if (cellValue === PLAYER_O) {
-                                                    cardContentClassName = classes.playerCircle;
+                                                    cardContentClassName += ` ${classes.playerCircle}`;
                                                 }
 
                                                 // determine if the cell is a win-cell or not if the game is over
