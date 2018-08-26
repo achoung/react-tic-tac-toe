@@ -69,12 +69,12 @@ const styles = {
         backgroundColor: '#90ee90',
     },
     playerCross: {
-        // red
-        color: '#f22613',
+        // dark red
+        color: '#8b0000',
     },
     playerCircle: {
-        // green-blue
-        color: '#1ba39c',
+        // dark green-blue
+        color: '#003636',
     },
     gameOverText: {
         color: 'orange',
@@ -423,7 +423,7 @@ class App extends PureComponent {
                                                         className={cardClassName}
                                                     >
                                                         <CardContent>
-                                                            <Typography className={cardContentClassName} variant="display1">
+                                                            <Typography className={cardContentClassName} variant="display2">
                                                                 {board[row][col]}
                                                             </Typography>
                                                         </CardContent>
