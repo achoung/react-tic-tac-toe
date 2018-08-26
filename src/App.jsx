@@ -54,6 +54,7 @@ const styles = {
         display: 'flex',
     },
     gridCell: {
+        userSelect: 'none',
         cursor: 'pointer',
         flex: '1 auto',
         display: 'flex',
@@ -63,6 +64,9 @@ const styles = {
         backgroundColor: '#FFF',
         height: 100,
         width: 100,
+    },
+    gameOverGridCell: {
+        cursor: 'initial',
     },
     winGridCell: {
         // light-green
@@ -412,8 +416,11 @@ class App extends PureComponent {
                                                 // determine if the cell is a win-cell or not if the game is over
                                                 let cardClassName = classes.gridCell;
                                                 let isWinCell = this.isCellWinCondition(row, col);
-                                                if (isGameOver && isWinCell) {
-                                                    cardClassName += ` ${classes.winGridCell}`;
+                                                if (isGameOver) {
+                                                    cardClassName += ` ${classes.gameOverGridCell}`;
+                                                    if (isWinCell) {
+                                                        cardClassName += ` ${classes.winGridCell}`;
+                                                    }
                                                 }
 
                                                 return (
