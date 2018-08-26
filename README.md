@@ -8,4 +8,4 @@ Extra features include:
 
 - Once a player has won, the winning cells highlight.
 
-- Player X and O are always randomly picked to start a new game.
+- Player X and O are randomly picked to start first in a new game.
