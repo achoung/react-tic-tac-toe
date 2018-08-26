@@ -89,6 +89,13 @@ const styles = {
     },
 };
 
+/**
+ * This app renders a 2 player tic-tac-toe game that can reset when the game
+ * is over. Players X and O are also randomly selected to start a new game.
+ *
+ * @class App
+ * @extends PureComponent
+ */
 class App extends PureComponent {
     static propTypes = {
         // props from HOCs
@@ -290,6 +297,12 @@ class App extends PureComponent {
         }
     }
 
+    /**
+     * Handles the event when a grid cell is clicked.
+     *
+     * @param {String} row The cell row number
+     * @param {String} col The cell column number
+     */
     onCellClick(row, col) {
         const { board, numOfTurns, currentPlayer, isGameOver } = this.state;
 
