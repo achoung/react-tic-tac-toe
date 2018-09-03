@@ -4,18 +4,19 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
-import { Button, Card, CardContent, Typography } from '@material-ui/core';
+import { Button, Typography } from '@material-ui/core';
 import { withStyles, createMuiTheme } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 import AppBar from 'components/AppBar';
 import { APP_BAR_TITLE, TOOLBAR_ITEMS } from 'constants/appBarConstants';
+import { Board as TicTacToeBoard } from 'components/TicTacToe';
 import {
     BOARD_DIMENSION,
     TOTAL_NUM_OF_BOARD_CELLS,
     PLAYER_X,
     PLAYER_O,
     PLAYERS,
-} from 'constants/appConstants';
+} from 'components/TicTacToe/constants';
 
 import './App.css';
 
@@ -47,42 +48,6 @@ const styles = {
     resetButton: {
         flex: '0 auto',
         padding: '6px 12px',
-    },
-    grid: {
-        maxWidth: 400,
-    },
-    gridRow: {
-        display: 'flex',
-    },
-    gridCell: {
-        userSelect: 'none',
-        cursor: 'pointer',
-        flex: '1 auto',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        border: '1px solid black',
-        backgroundColor: '#FFF',
-        height: 100,
-        width: 100,
-    },
-    gameOverGridCell: {
-        cursor: 'initial',
-    },
-    winGridCell: {
-        // light-green
-        backgroundColor: '#90ee90',
-    },
-    cardContent: {
-        textShadow: '1px 1px black',
-    },
-    playerCross: {
-        // dark red
-        color: '#8b0000',
-    },
-    playerCircle: {
-        // dark green-blue
-        color: '#003636',
     },
     gameOverText: {
         color: 'orange',
@@ -300,10 +265,12 @@ class App extends PureComponent {
     /**
      * Handles the event when a grid cell is clicked.
      *
-     * @param {String} row The cell row number
-     * @param {String} col The cell column number
+     * @param {Object} data The clicked grid cell data
+     * @param {String} data.row The cell row number
+     * @param {String} data.column The cell column number
      */
-    onCellClick(row, col) {
+    onCellClick = data => {
+        const { row, column } = data;
         const { board, numOfTurns, currentPlayer, isGameOver } = this.state;
 
         // if game is over do, nothing
@@ -311,9 +278,9 @@ class App extends PureComponent {
             return;
         }
 
-        if (board[row][col] === '') {
+        if (board[row][column] === '') {
             const updatedBoard = JSON.parse(JSON.stringify(board));
-            updatedBoard[row][col] = currentPlayer;
+            updatedBoard[row][column] = currentPlayer;
             const nextNumOfTurns = numOfTurns + 1;
 
             const { playerWon, winCondition } = this.hasPlayerWon(updatedBoard);
@@ -362,25 +329,13 @@ class App extends PureComponent {
     };
 
     /**
-     * Checks if a cell is part of a win condition.
-     *
-     * @param {String} row The cell row number
-     * @param {String} col The cell column number
-     * @returns {Boolean} Returns true if the cell is a win condition or false otherwise
-     */
-    isCellWinCondition(row, col) {
-        const { winCondition } = this.state;
-        return winCondition.some(winCell => (winCell.row === row && winCell.col === col));
-    }
-
-    /**
-     * Renders the component in JSX syntax
+     * Renders the board header component in JSX syntax
      * 
-     * @returns {JSX} the component view
+     * @returns {JSX} the board header component view
      */
-    render() {
+    renderHeader() {
         const { classes } = this.props;
-        const { board, isGameOver, currentPlayer, playerWon } = this.state;
+        const { isGameOver, currentPlayer, playerWon } = this.state;
 
         let headerText = null;
         let renderedResetButton = null;
@@ -404,61 +359,36 @@ class App extends PureComponent {
         }
 
         return (
+            <div className={classes.header}>
+                <Typography variant="headline" className={headerTitleClassName}>
+                    {headerText}
+                </Typography>
+                {renderedResetButton}
+            </div>
+        );
+    }
+
+    /**
+     * Renders the component in JSX syntax
+     * 
+     * @returns {JSX} the component view
+     */
+    render() {
+        const { classes } = this.props;
+        const { board, isGameOver, winCondition } = this.state;
+
+        return (
             <MuiThemeProvider theme={theme}>
                 <AppBar title={APP_BAR_TITLE} toolbarItems={TOOLBAR_ITEMS} />
                 <div className={classes.container}>
-                    <div className={classes.header}>
-                        <Typography variant="headline" className={headerTitleClassName}>
-                            {headerText}
-                        </Typography>
-                        {renderedResetButton}
-                    </div>
+                    {this.renderHeader()}
                     <div className={classes.grid}>
-                        {
-                            Object.keys(board).map(row => {
-                                return (
-                                    <div key={`row_${row}`} className={classes.gridRow}>
-                                        {
-                                            Object.keys(board[row]).map(col => {
-                                                const cellValue = board[row][col];
-
-                                                // determine how to style the X's or O's
-                                                let cardContentClassName = classes.cardContent;
-                                                if (cellValue === PLAYER_X) {
-                                                    cardContentClassName += ` ${classes.playerCross}`;
-                                                } else if (cellValue === PLAYER_O) {
-                                                    cardContentClassName += ` ${classes.playerCircle}`;
-                                                }
-
-                                                // determine if the cell is a win-cell or not if the game is over
-                                                let cardClassName = classes.gridCell;
-                                                let isWinCell = this.isCellWinCondition(row, col);
-                                                if (isGameOver) {
-                                                    cardClassName += ` ${classes.gameOverGridCell}`;
-                                                    if (isWinCell) {
-                                                        cardClassName += ` ${classes.winGridCell}`;
-                                                    }
-                                                }
-
-                                                return (
-                                                    <Card
-                                                        key={`col_${col}`}
-                                                        onClick={this.onCellClick.bind(this, row, col)}
-                                                        className={cardClassName}
-                                                    >
-                                                        <CardContent>
-                                                            <Typography className={cardContentClassName} variant="display2">
-                                                                {board[row][col]}
-                                                            </Typography>
-                                                        </CardContent>
-                                                    </Card>
-                                                );
-                                            })
-                                        }
-                                    </div>
-                                );
-                            })
-                        }
+                        <TicTacToeBoard
+                            board={board}
+                            isGameOver={isGameOver}
+                            winCondition={winCondition}
+                            onCellClick={this.onCellClick}
+                        />
                     </div>
                 </div>
             </MuiThemeProvider>
